@@ -1,0 +1,114 @@
+/* GENERAL PAGE LAYOUT */
+.app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f3f4f6;
+}
+
+/* Full-width background bar */
+.app-header {
+  width: 100%;
+  background: #111827;
+  color: #f9fafb;
+}
+
+/* PROFILE BAR spans full width */
+.profile-bar {
+  width: 100%;
+}
+
+/* MAIN CONTENT AREA — flexbox centered with max-width */
+.app-main {
+  flex: 1;
+  display: flex;
+  justify-content: center;       /* center horizontally */
+  padding: 1rem;
+}
+
+/* “Content wrapper” to limit width */
+.app-content {
+  width: 100%;
+  max-width: 1000px;
+  min-width: 340px;   /* protects your smallest design */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* FOOTER spans full width */
+.app-footer {
+  width: 100%;
+  text-align: center;
+}
+
+/* Centered content, 2 flex columns: title (left), nav (right) */
+.app-header-inner {
+  max-width: 1000px;   /* matches your main content width */
+  margin: 0 auto;      /* centers horizontally */
+  padding: 0.75rem 1rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.app-title {
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+/* Make sure nav sits nicely as the right “column” */
+.app-nav {
+  position: relative;
+  display: flex;
+  align-items: right;
+}
+
+/* Existing nav styles still apply… */
+/* .nav-links-desktop, .nav-hamburger, etc. */
+
+/* Normal layout starts at 750px */
+@media (min-width: 750px) {
+  .app-header-inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-links-desktop {
+    display: flex;
+  }
+
+  .nav-hamburger {
+    display: none;
+  }
+
+  .home-hero {
+    grid-template-columns: 1.2fr 1fr;
+  }
+}
+
+/* Mobile layout below 750px */
+@media (max-width: 749px) {
+  .app-header-inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-links-desktop {
+    display: none;
+  }
+
+  .nav-hamburger {
+    display: inline-flex;
+    margin-left: auto;
+  }
+
+  .home-hero {
+    grid-template-columns: 1fr;
+  }
+}

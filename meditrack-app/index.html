@@ -2,66 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <title>MediTrack Lite</title>
+    <meta
+      name="description"
+      content="MediTrack Lite — Healthcare Credential Tracker"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>meditrack-app</title>
+
+    <!-- Optional: app icon / favicon later -->
+    <!-- <link rel="icon" type="image/svg+xml" href="/meditrack-icon.svg" /> -->
   </head>
   <body>
-    <header>
-      <h1>MediTrack</h1>
-      <button aria-label="User Menu" class="menu-button">
-        <span>☰</span>
-      </button>
-    </header>
-
-    <main>
-      <section class="profile-banner">
-        <img src="default-avatar.png" alt="User profile picture" />
-        <div>
-          <h2 id="user-name">John Doe</h2>
-          <p id="user-role">Radiology Technologist</p>
-        </div>
-      </section>
-
-      <section class="dashboard">
-        <div class="reports-section">
-          <h3>View Reports</h3>
-          <button id="expired-btn">Expired Credentials</button>
-          <button id="expiring-btn">Expiring Soon</button>
-        </div>
-
-        <div class="credentials-seciton">
-          <h3>Credentials</h3>
-          <div class="credentials-scrolling-list">
-            <ul>
-              <li>
-                <span class="status-dot"></span>
-                <span class="credential-name">Radiography (R.T.(R))</span>
-                <button class="edit-btn">Update</button>
-              </li>
-              <li>
-                <span class="status-dot"></span>
-                <span class="credential-name">Radiography (R.T.(R))</span>
-                <button class="edit-btn">Update</button>
-              </li>
-              <li>
-                <span class="status-dot"></span>
-                <span class="credential-name">Radiography (R.T.(R))</span>
-                <button class="edit-btn">Update</button>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        
-      </section>
-    </main>
-
-    <footer>
-      <p>&copy; 2025 MediTrack</p>
-    </footer>
-
     <div id="root"></div>
-    <!-- <script type="module" src="/src/main.jsx"></script> -->
+
+    <!-- Vite entry point -->
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

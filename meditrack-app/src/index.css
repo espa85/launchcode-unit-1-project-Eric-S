@@ -1,0 +1,118 @@
+/* ============================================================
+   GLOBAL BASELINE & RESET
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root{
+  min-width: 340px;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f3f4f6; /* light gray background */
+  color: #111827;           /* dark slate text */
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Remove button and input strange browser defaults */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+}
+
+/* Anchor default */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ============================================================
+   ROOT WRAPPER (React mounts here)
+   ============================================================ */
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   LAYOUT UTILITIES
+   ============================================================ */
+
+/* Centers content and enforces max width */
+.container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;          /* centers horizontally */
+  padding: 1rem;           /* breathing room */
+}
+
+/* Basic flex helpers */
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+.center {
+  justify-content: center;
+  align-items: center;
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+
+h1, h2, h3, h4 {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+p {
+  margin-bottom: 0.75rem;
+}
+
+small {
+  font-size: 0.85rem;
+  color: #6b7280; /* gray-500 */
+}
+
+/* ============================================================
+   TABLE DEFAULTS
+   ============================================================ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+th {
+  background: #f3f4f6;
+  font-weight: 600;
+}
+
+/* ============================================================
+   B
