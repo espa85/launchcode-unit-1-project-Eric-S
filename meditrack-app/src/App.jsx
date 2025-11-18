@@ -13,6 +13,7 @@ function App() {
   const [doctors, setDoctors] = useState(seedDoctors);
   const [users, setUsers] = useState(seedUsers);
   const [currentUser, setCurrentUser] = useState(null);
+  const isLoggedIn = Boolean(currentUser);
 
   function handleNavChange(view) {
     setCurrentView(view);
@@ -49,15 +50,19 @@ function App() {
 
   // Doctor CRUD
   function addDoctor(newDoctor) {
+    if (!isLoggedIn) return alert("You must be logged in to add a doctor.");
     setDoctors((prev) => [...prev, { ...newDoctor, id: crypto.randomUUID(), credentials: [] }]);
   }
 
   function deleteDoctor(id) {
+    if (!isLoggedIn) return alert("You must be logged in to delete a doctor.");
     setDoctors((prev) => prev.filter((doc) => doc.id !== id));
   }
 
   // Credential CRUD (per doctor)
   function addCredential(doctorId, newCredential) {
+    if (!isLoggedIn) return alert("You must be logged in to add a credential.");
+
     setDoctors((prev) =>
       prev.map((doc) =>
         doc.id === doctorId
@@ -74,6 +79,8 @@ function App() {
   }
 
   function deleteCredential(doctorId, credentialId) {
+    if (!isLoggedIn) return alert("You must be logged in to delete a credential.");
+
     setDoctors((prev) =>
       prev.map((doc) =>
         doc.id === doctorId
@@ -96,6 +103,7 @@ function App() {
         doctors={doctors}
         onAddDoctor={addDoctor}
         onDeleteDoctor={deleteDoctor}
+        isLoggedIn={isLoggedIn}
       />
     );
   } else if (currentView === "credentials") {
@@ -104,6 +112,7 @@ function App() {
         doctors={doctors}
         onAddCredential={addCredential}
         onDeleteCredential={deleteCredential}
+        isLoggedIn={isLoggedIn}
         mode="byDoctor"
       />
     );
