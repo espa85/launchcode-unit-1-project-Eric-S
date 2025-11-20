@@ -13,72 +13,118 @@ function App() {
   const [doctors, setDoctors] = useState(seedDoctors);
   const [users, setUsers] = useState(seedUsers);
   const [currentUser, setCurrentUser] = useState(null);
-  const isLoggedIn = Boolean(currentUser);
+
+  // roles
   const isAdmin = currentUser?.role === "admin";
+  const isDoctor = currentUser?.role === "doctor";
+
+  // doctor id this user is allowed to edit (if they are a doctor)
+  const editableDoctorId = isDoctor ? currentUser.doctorId : null;
+
+  // check admin or doc
+  function canEditDoctor(doctorId) {
+    return isAdmin || (isDoctor && editableDoctorId === doctorId);
+  }
 
   function handleNavChange(view) {
     setCurrentView(view);
   }
 
-  function notAdmin( action ) {
-    return alert(`Only an admin can ${action}.`);
+  function notAdmin(action) {
+    alert(`Only an admin can ${action}.`);
   }
 
   function handleSignIn(email, password) {
     // WARNING: mock only. Real apps never keep plain-text passwords on the front-end.
     const trimmedEmail = email.trim().toLowerCase();
-    const existingUser = users.find((u) => u.email.toLowerCase() === trimmedEmail);
 
-    if (!existingUser) {
-      // Create new user with this email and password
-      const newUser = {
-        id: crypto.randomUUID(),
-        email: trimmedEmail,
-        password,
-        role: "viewer", //not alowed to edit
-      };
-      setUsers((prev) => [...prev, newUser]);
-      setCurrentUser({ email: newUser.email, role: newUser.role });
-      return { status: "created", role: "viewer" };
+    // 1) Check existing "users" (admin or previously-created viewer)
+    const existingUser = users.find(
+      (u) => u.email.toLowerCase() === trimmedEmail
+    );
+
+    if (existingUser) {
+      if (existingUser.password === password) {
+        setCurrentUser({
+          email: existingUser.email,
+          role: existingUser.role,
+        });
+        return { status: "ok", role: existingUser.role };
+      } else {
+        return { status: "error", message: "Incorrect password." };
+      }
     }
 
-    if (existingUser.password === password) {
-      setCurrentUser({ email: existingUser.email, role: existingUser.role });
-      return { status: "ok", role: existingUser.role };
+    // 2) Check doctors list for doctor login
+    const doctorUser = doctors.find(
+      (d) => d.email && d.email.toLowerCase() === trimmedEmail
+    );
+
+    if (doctorUser) {
+      if (doctorUser.password === password) {
+        setCurrentUser({
+          email: doctorUser.email,
+          role: "doctor",
+          doctorId: doctorUser.id,
+          name: `${doctorUser.firstName} ${doctorUser.lastName}`,
+        });
+        return { status: "ok", role: "doctor" };
+      } else {
+        return { status: "error", message: "Incorrect password." };
+      }
     }
 
-    return { status: "error", message: "Incorrect password." };
+    // 3) New email → create viewer (read-only)
+    const newUser = {
+      id: crypto.randomUUID(),
+      email: trimmedEmail,
+      password,
+      role: "viewer", // not allowed to edit
+    };
+    setUsers((prev) => [...prev, newUser]);
+    setCurrentUser({ email: newUser.email, role: newUser.role });
+    return { status: "created", role: "viewer" };
   }
 
   function handleSignOut() {
     setCurrentUser(null);
   }
 
+  function updateDoctor(doctorId, updates) {
+    if (!canEditDoctor(doctorId)) {
+      alert("You can only edit your own doctor profile (or be an admin).");
+      return;
+    }
+    setDoctors((prev) =>
+      prev.map((doc) => (doc.id === doctorId ? { ...doc, ...updates } : doc))
+    );
+  }
+
   // Doctor CRUD
   function addDoctor(newDoctor) {
     if (!isAdmin) {
       notAdmin("add doctors");
-      return 
+      return;
     }
     setDoctors((prev) => [
-      ...prev, 
-      { ...newDoctor, id: crypto.randomUUID(), credentials: [] }
+      ...prev,
+      { ...newDoctor, id: crypto.randomUUID(), credentials: [] },
     ]);
   }
 
   function deleteDoctor(id) {
     if (!isAdmin) {
       notAdmin("delete doctors");
-      return 
+      return;
     }
     setDoctors((prev) => prev.filter((doc) => doc.id !== id));
   }
 
   // Credential CRUD (per doctor)
   function addCredential(doctorId, newCredential) {
-    if (!isAdmin) {
-      notAdmin("add credentials");
-      return 
+    if (!canEditDoctor(doctorId)) {
+      alert("You can only add credentials for your own profile (or be an admin).");
+      return;
     }
 
     setDoctors((prev) =>
@@ -97,9 +143,9 @@ function App() {
   }
 
   function deleteCredential(doctorId, credentialId) {
-    if (!isAdmin) {
+    if (!canEditDoctor(doctorId)) {
       notAdmin("delete credentials");
-      return 
+      return;
     }
 
     setDoctors((prev) =>
@@ -117,14 +163,22 @@ function App() {
   // View selector
   let content = null;
   if (currentView === "home") {
-    content = <Home currentUser={currentUser} onSignIn={handleSignIn} onSignOut={handleSignOut} />;
+    content = (
+      <Home
+        currentUser={currentUser}
+        onSignIn={handleSignIn}
+        onSignOut={handleSignOut}
+      />
+    );
   } else if (currentView === "doctors") {
     content = (
       <Doctors
         doctors={doctors}
         onAddDoctor={addDoctor}
         onDeleteDoctor={deleteDoctor}
-        isLoggedIn={isLoggedIn}
+        onUpdateDoctor={updateDoctor}
+        isAdmin={isAdmin}
+        editableDoctorId={editableDoctorId}
       />
     );
   } else if (currentView === "credentials") {
@@ -133,7 +187,8 @@ function App() {
         doctors={doctors}
         onAddCredential={addCredential}
         onDeleteCredential={deleteCredential}
-        isLoggedIn={isLoggedIn}
+        isAdmin={isAdmin}
+        editableDoctorId={editableDoctorId}
         mode="byDoctor"
       />
     );
@@ -143,6 +198,8 @@ function App() {
         doctors={doctors}
         onAddCredential={addCredential}
         onDeleteCredential={deleteCredential}
+        isAdmin={isAdmin}
+        editableDoctorId={editableDoctorId}
         mode="all"
       />
     );
@@ -154,15 +211,14 @@ function App() {
       <ProfileBar currentUser={currentUser} />
 
       <main className="app-main">
-        <div className="app-content">
-          {content}
-        </div>
+        <div className="app-content">{content}</div>
       </main>
 
-      <footer className="app-footer">© {new Date().getFullYear()} MediTrack Lite</footer>
+      <footer className="app-footer">
+        © {new Date().getFullYear()} MediTrack Lite
+      </footer>
     </div>
   );
-
 }
 
 export default App;

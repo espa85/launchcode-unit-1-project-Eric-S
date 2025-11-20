@@ -64,7 +64,8 @@
 .app-nav {
   position: relative;
   display: flex;
-  align-items: right;
+  align-items: center;
+  justify-items: flex-end;
 }
 
 /* Existing nav styles still apply… */
