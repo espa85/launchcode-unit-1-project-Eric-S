@@ -2,22 +2,33 @@
 import React, { useState } from "react";
 import Button from "./Button.jsx";
 
-function Credentials({ doctors, onAddCredential, onDeleteCredential, mode }) {
+function Credentials({
+  doctors,
+  onAddCredential,
+  onDeleteCredential,
+  mode,
+  isAdmin,
+  editableDoctorId,
+}) {
+  // Build doctor options once
+  const doctorOptions = doctors.map((d) => ({
+    value: d.id,
+    label: `${d.lastName}, ${d.firstName}`,
+  }));
+
+  const isDoctorLimited = !isAdmin && editableDoctorId != null;
+
   const [selectedDoctorId, setSelectedDoctorId] = useState(
-    doctors[0]?.id || ""
+    isDoctorLimited ? editableDoctorId : doctorOptions[0]?.value ?? ""
   );
+
   const [form, setForm] = useState({
     name: "",
     status: "active",
     effectiveDate: "",
     expirationDate: "",
   });
-
-  const doctorOptions = doctors.map((d) => ({
-    value: d.id,
-    label: `${d.lastName}, ${d.firstName}`,
-  }));
-
+  
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -27,7 +38,7 @@ function Credentials({ doctors, onAddCredential, onDeleteCredential, mode }) {
     e.preventDefault();
     if (!selectedDoctorId || !form.name.trim()) return;
 
-    onAddCredential(selectedDoctorId, form);
+    onAddCredential(Number(selectedDoctorId), form);
     setForm({
       name: "",
       status: "active",
@@ -49,11 +60,17 @@ function Credentials({ doctors, onAddCredential, onDeleteCredential, mode }) {
     mode === "byDoctor" ? selectedDoctorId : doctors[0]?.id || "";
 
   const selectedDoctor =
-    doctors.find((d) => d.id === displayDoctorId) || doctors[0];
+    doctors.find((d) => d.id === Number(displayDoctorId)) || doctors[0];
 
   return (
     <section className="credentials-page">
       <h2>Credentials</h2>
+
+      {!isAdmin && !isDoctorLimited && (
+        <p className="locked-message">
+          You are signed in as a viewer. Only an admin can modify credentials.
+        </p>
+      )}
 
       <form className="simple-form" onSubmit={handleSubmit}>
         <h3>Add Credential</h3>
@@ -62,8 +79,11 @@ function Credentials({ doctors, onAddCredential, onDeleteCredential, mode }) {
           Doctor
           <select
             value={selectedDoctorId}
-            onChange={(e) => setSelectedDoctorId(e.target.value)}
-            required
+            onChange={(e) => {
+              if (isDoctorLimited) return; // doctor can't switch to someone else
+              setSelectedDoctorId(Number(e.target.value));
+            }}
+            disabled={isDoctorLimited}
           >
             <option value="">Select doctor</option>
             {doctorOptions.map((opt) => (
@@ -113,13 +133,22 @@ function Credentials({ doctors, onAddCredential, onDeleteCredential, mode }) {
           />
         </label>
 
-        <Button type="submit">Add Credential</Button>
+        <Button
+          type="submit"
+          disabled={
+            !isAdmin &&
+            !(isDoctorLimited && editableDoctorId === Number(selectedDoctorId))
+          }
+        >
+          Add Credential
+        </Button>
       </form>
 
       {mode === "byDoctor" && selectedDoctor && (
         <>
           <h3>
-            Credentials for {selectedDoctor.lastName}, {selectedDoctor.firstName}
+            Credentials for {selectedDoctor.lastName},{" "}
+            {selectedDoctor.firstName}
           </h3>
           <table className="data-table">
             <thead>
@@ -137,24 +166,33 @@ function Credentials({ doctors, onAddCredential, onDeleteCredential, mode }) {
                   <td colSpan="5">No credentials recorded.</td>
                 </tr>
               )}
-              {(selectedDoctor.credentials || []).map((cred) => (
-                <tr key={cred.id}>
-                  <td>{cred.name}</td>
-                  <td>{cred.status}</td>
-                  <td>{cred.effectiveDate || "—"}</td>
-                  <td>{cred.expirationDate || "—"}</td>
-                  <td>
-                    <Button
-                      variant="danger"
-                      onClick={() =>
-                        onDeleteCredential(selectedDoctor.id, cred.id)
-                      }
-                    >
-                      Delete
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+              {(selectedDoctor.credentials || []).map((cred) => {
+                const canDeleteThis =
+                  isAdmin ||
+                  (editableDoctorId != null &&
+                    editableDoctorId === selectedDoctor.id);
+
+                return (
+                  <tr key={cred.id}>
+                    <td>{cred.name}</td>
+                    <td>{cred.status}</td>
+                    <td>{cred.effectiveDate || "—"}</td>
+                    <td>{cred.expirationDate || "—"}</td>
+                    <td>
+                      <Button
+                        variant="danger"
+                        disabled={!canDeleteThis}
+                        onClick={() =>
+                          canDeleteThis &&
+                          onDeleteCredential(selectedDoctor.id, cred.id)
+                        }
+                      >
+                        Delete
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </>
@@ -180,25 +218,34 @@ function Credentials({ doctors, onAddCredential, onDeleteCredential, mode }) {
                   <td colSpan="6">No credentials recorded.</td>
                 </tr>
               )}
-              {flattenedCredentials.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.doctorName}</td>
-                  <td>{row.name}</td>
-                  <td>{row.status}</td>
-                  <td>{row.effectiveDate || "—"}</td>
-                  <td>{row.expirationDate || "—"}</td>
-                  <td>
-                    <Button
-                      variant="danger"
-                      onClick={() =>
-                        onDeleteCredential(row.doctorId, row.id)
-                      }
-                    >
-                      Delete
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+              {flattenedCredentials.map((row) => {
+                const canDeleteThis =
+                  isAdmin ||
+                  (editableDoctorId != null &&
+                    editableDoctorId === row.doctorId);
+
+                return (
+                  <tr key={row.id}>
+                    <td>{row.doctorName}</td>
+                    <td>{row.name}</td>
+                    <td>{row.status}</td>
+                    <td>{row.effectiveDate || "—"}</td>
+                    <td>{row.expirationDate || "—"}</td>
+                    <td>
+                      <Button
+                        variant="danger"
+                        disabled={!canDeleteThis}
+                        onClick={() =>
+                          canDeleteThis &&
+                          onDeleteCredential(row.doctorId, row.id)
+                        }
+                      >
+                        Delete
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </>
