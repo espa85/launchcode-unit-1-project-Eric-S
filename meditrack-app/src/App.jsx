@@ -14,31 +14,37 @@ function App() {
   const [users, setUsers] = useState(seedUsers);
   const [currentUser, setCurrentUser] = useState(null);
   const isLoggedIn = Boolean(currentUser);
+  const isAdmin = currentUser?.role === "admin";
 
   function handleNavChange(view) {
     setCurrentView(view);
   }
 
+  function notAdmin( action ) {
+    return alert(`Only an admin can ${action}.`);
+  }
+
   function handleSignIn(email, password) {
     // WARNING: mock only. Real apps never keep plain-text passwords on the front-end.
-    const existingUser = users.find((u) => u.email === email);
+    const trimmedEmail = email.trim().toLowerCase();
+    const existingUser = users.find((u) => u.email.toLowerCase() === trimmedEmail);
 
     if (!existingUser) {
       // Create new user with this email and password
       const newUser = {
         id: crypto.randomUUID(),
-        email,
+        email: trimmedEmail,
         password,
-        role: "admin",
+        role: "viewer", //not alowed to edit
       };
       setUsers((prev) => [...prev, newUser]);
       setCurrentUser({ email: newUser.email, role: newUser.role });
-      return { status: "created" };
+      return { status: "created", role: "viewer" };
     }
 
     if (existingUser.password === password) {
       setCurrentUser({ email: existingUser.email, role: existingUser.role });
-      return { status: "ok" };
+      return { status: "ok", role: existingUser.role };
     }
 
     return { status: "error", message: "Incorrect password." };
@@ -50,18 +56,30 @@ function App() {
 
   // Doctor CRUD
   function addDoctor(newDoctor) {
-    if (!isLoggedIn) return alert("You must be logged in to add a doctor.");
-    setDoctors((prev) => [...prev, { ...newDoctor, id: crypto.randomUUID(), credentials: [] }]);
+    if (!isAdmin) {
+      notAdmin("add doctors");
+      return 
+    }
+    setDoctors((prev) => [
+      ...prev, 
+      { ...newDoctor, id: crypto.randomUUID(), credentials: [] }
+    ]);
   }
 
   function deleteDoctor(id) {
-    if (!isLoggedIn) return alert("You must be logged in to delete a doctor.");
+    if (!isAdmin) {
+      notAdmin("delete doctors");
+      return 
+    }
     setDoctors((prev) => prev.filter((doc) => doc.id !== id));
   }
 
   // Credential CRUD (per doctor)
   function addCredential(doctorId, newCredential) {
-    if (!isLoggedIn) return alert("You must be logged in to add a credential.");
+    if (!isAdmin) {
+      notAdmin("add credentials");
+      return 
+    }
 
     setDoctors((prev) =>
       prev.map((doc) =>
@@ -79,7 +97,10 @@ function App() {
   }
 
   function deleteCredential(doctorId, credentialId) {
-    if (!isLoggedIn) return alert("You must be logged in to delete a credential.");
+    if (!isAdmin) {
+      notAdmin("delete credentials");
+      return 
+    }
 
     setDoctors((prev) =>
       prev.map((doc) =>

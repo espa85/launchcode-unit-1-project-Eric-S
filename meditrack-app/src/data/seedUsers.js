@@ -2,8 +2,8 @@
 export const seedUsers = [
   {
     id: "admin-1",
-    email: "admin@meditrack.test",
-    password: "admin123", // MOCK ONLY – never do this in production
+    email: "admin@meditrack.local",
+    password: "meditrack123", // DEMO ONLY - not secure
     role: "admin",
   },
 ];
