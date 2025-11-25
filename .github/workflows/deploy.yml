@@ -1,0 +1,54 @@
+# Simple workflow for deploying Vite app in /meditrack-app to GitHub Pages
+name: Deploy MediTrack app to GitHub Pages
+
+on:
+  push:
+    branches: ['main']   # run on pushes to main
+  workflow_dispatch:      # allow manual run from Actions tab
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./meditrack-app
+
+      - name: Build
+        run: npm run build
+        working-directory: ./meditrack-app
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          # Path to the Vite build output (relative to repo root)
+          path: ./meditrack-app/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
