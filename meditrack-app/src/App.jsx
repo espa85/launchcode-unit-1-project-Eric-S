@@ -7,6 +7,7 @@ import Doctors from "./components/Doctors.jsx";
 import Credentials from "./components/Credentials.jsx";
 import { seedDoctors } from "./data/seedDoctors.js";
 import { seedUsers } from "./data/seedUsers.js";
+import './App.css';
 
 function App() {
   const [currentView, setCurrentView] = useState("home"); // 'home' | 'doctors' | 'credentials' | 'viewAll'

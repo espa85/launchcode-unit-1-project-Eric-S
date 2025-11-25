@@ -1,7 +1,7 @@
 // src/components/Home.jsx
 import React, { useState } from "react";
 import Button from "./Button.jsx";
-// import heroImage from "../assets/your-image.png"; // add later
+import heroImage from "../assets/doc-office-2.jpg"; // add later
 
 function Home({ currentUser, onSignIn, onSignOut }) {
   const [email, setEmail] = useState("");
@@ -25,8 +25,7 @@ function Home({ currentUser, onSignIn, onSignOut }) {
       <div className="home-hero">
         {/* Replace with user-uploaded image when ready */}
         <div className="home-hero-image" aria-label="MediTrack illustration">
-          {/* <img src={heroImage} alt="MediTrack dashboard illustration" /> */}
-          <span>Random Graphic Placeholder</span>
+          {<img src={heroImage} alt="MediTrack dashboard illustration" className="home-hero-img" />}
         </div>
         <div className="home-hero-text">
           <h1>Welcome!</h1>
