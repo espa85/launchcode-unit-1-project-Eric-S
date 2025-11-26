@@ -49,6 +49,8 @@ function Credentials({
 
   const isDoctorLimited = !isAdmin && editableDoctorId != null;
 
+  const canModifyCredentials = isAdmin || isDoctorLimited;
+
   const [selectedDoctorId, setSelectedDoctorId] = useState(
     isDoctorLimited ? editableDoctorId : doctorOptions[0]?.value ?? ""
   );
@@ -103,72 +105,74 @@ function Credentials({
 
       {!isAdmin && !isDoctorLimited && (
         <p className="locked-message">
-          You are signed in as a viewer. Only an admin can modify credentials.
+          Only administrators and doctors can add or modify credentials.
         </p>
       )}
 
-      <form className="simple-form" onSubmit={handleSubmit}>
-        <h3>Add Credential</h3>
+      {canModifyCredentials && (
+        <form className="simple-form" onSubmit={handleSubmit}>
+          <h3>Add Credential</h3>
 
-        <label>
-          Doctor
-          <select
-            value={selectedDoctorId}
-            onChange={(e) => {
-              if (isDoctorLimited) return; // doctor can't switch to someone else
-              setSelectedDoctorId(Number(e.target.value));
-            }}
-            disabled={isDoctorLimited}
-          >
-            <option value="">Select doctor</option>
-            {doctorOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label>
+            Doctor
+            <select
+              value={selectedDoctorId}
+              onChange={(e) => {
+                if (isDoctorLimited) return; // doctor can't switch to someone else
+                setSelectedDoctorId(Number(e.target.value));
+              }}
+              disabled={isDoctorLimited}
+            >
+              <option value="">Select doctor</option>
+              {doctorOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label>
-          Credential Name
-          <input
+          <label>
+            Credential Name
+            <input
             name="name"
             value={form.name}
             onChange={handleChange}
             required
-          />
-        </label>
+            />
+          </label>
 
-        <label>
-          Effective Date
-          <input
-            type="date"
-            name="effectiveDate"
-            value={form.effectiveDate}
-            onChange={handleChange}
-          />
-        </label>
+          <label>
+            Effective Date
+            <input
+              type="date"
+              name="effectiveDate"
+              value={form.effectiveDate}
+              onChange={handleChange}
+            />
+          </label>
 
-        <label>
-          Expiration Date
-          <input
-            type="date"
-            name="expirationDate"
-            value={form.expirationDate}
-            onChange={handleChange}
-          />
-        </label>
+          <label>
+            Expiration Date
+            <input
+              type="date"
+              name="expirationDate"
+              value={form.expirationDate}
+              onChange={handleChange}
+            />
+          </label>
 
-        <Button
-          type="submit"
-          disabled={
-            !isAdmin &&
-            !(isDoctorLimited && editableDoctorId === Number(selectedDoctorId))
-          }
-        >
-          Add Credential
-        </Button>
-      </form>
+          <Button
+            type="submit"
+            disabled={
+              !isAdmin &&
+              !(isDoctorLimited && editableDoctorId === Number(selectedDoctorId))
+            }
+          >
+            Add Credential
+          </Button>
+        </form>
+      )}
 
       {mode === "byDoctor" && selectedDoctor && (
         <>
@@ -183,7 +187,7 @@ function Credentials({
                 <th>Status</th>
                 <th>Effective</th>
                 <th>Expires</th>
-                <th>Actions</th>
+                {canModifyCredentials && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -205,16 +209,18 @@ function Credentials({
                     <td>{cred.effectiveDate || "—"}</td>
                     <td>{cred.expirationDate || "—"}</td>
                     <td>
-                      <Button
-                        variant="danger"
-                        disabled={!canDeleteThis}
-                        onClick={() =>
-                          canDeleteThis &&
-                          onDeleteCredential(selectedDoctor.id, cred.id)
-                        }
-                      >
-                        Delete
-                      </Button>
+                      {canDeleteThis && (
+                        <Button
+                          variant="danger"
+                          disabled={!canDeleteThis}
+                          onClick={() =>
+                            canDeleteThis &&
+                            onDeleteCredential(selectedDoctor.id, cred.id)
+                          }
+                        >
+                          Delete
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 );
@@ -235,7 +241,7 @@ function Credentials({
                 <th>Status</th>
                 <th>Effective</th>
                 <th>Expires</th>
-                <th>Actions</th>
+                {canModifyCredentials && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -258,16 +264,16 @@ function Credentials({
                     <td>{row.effectiveDate || "—"}</td>
                     <td>{row.expirationDate || "—"}</td>
                     <td>
-                      <Button
-                        variant="danger"
-                        disabled={!canDeleteThis}
-                        onClick={() =>
-                          canDeleteThis &&
-                          onDeleteCredential(row.doctorId, row.id)
-                        }
-                      >
-                        Delete
-                      </Button>
+                      {canDeleteThis && (
+                        <Button
+                          variant="danger"
+                          onClick={() => 
+                            onDeleteCredential(row.doctorId, row.id)
+                          }
+                        >
+                          Delete
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 );

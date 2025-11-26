@@ -107,7 +107,7 @@ function Doctors({
           <tr>
             <th>Name</th>
             <th>Specialty</th>
-            <th>Actions</th>
+            {isAdmin && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
