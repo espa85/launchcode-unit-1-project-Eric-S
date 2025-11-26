@@ -107,10 +107,22 @@ function App() {
       notAdmin("add doctors");
       return;
     }
-    setDoctors((prev) => [
-      ...prev,
-      { ...newDoctor, id: crypto.randomUUID(), credentials: [] },
-    ]);
+    setDoctors((prev) => {
+      //find high numeric id we already have
+      const maxId = prev.reduce((max, doc) => {
+        const numericId = typeof doc.id === "number" ? doc.id : Number(doc.id);
+        return Number.isNaN(numericId) ? max: Math.max(max, numericId);
+      }, 0);
+
+      return [
+        ...prev,
+        {
+          ...newDoctor,
+          id: maxId + 1,
+          credentials: [],
+        },
+      ];
+    });
   }
 
   function deleteDoctor(id) {
