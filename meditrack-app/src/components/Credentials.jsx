@@ -2,6 +2,37 @@
 import React, { useState } from "react";
 import Button from "./Button.jsx";
 
+function getCredentialStatus(expirationDate) {
+  if (!expirationDate) {
+    return "Active";
+  }
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const exp = new Date(expirationDate);
+  if(Number.isNaN(exp.getTime())) {
+    // bad date
+    return "Active"
+  }
+
+  exp.setHours(0,0,0,0);
+
+  const diffMs = exp.getTime() - today.getTime();
+  const diffDays = diffMs / (1000*60*60*24);
+
+  if (diffMs < 0 ) {
+    return "Expired"
+  }
+
+  const ExpiringSoonWindow = 60;
+  if (diffDays <= ExpiringSoonWindow) {
+    return "Expiring Soon";
+  }
+
+  return "Active";
+}
+
 function Credentials({
   doctors,
   onAddCredential,
@@ -24,7 +55,6 @@ function Credentials({
 
   const [form, setForm] = useState({
     name: "",
-    status: "active",
     effectiveDate: "",
     expirationDate: "",
   });
@@ -38,10 +68,15 @@ function Credentials({
     e.preventDefault();
     if (!selectedDoctorId || !form.name.trim()) return;
 
-    onAddCredential(Number(selectedDoctorId), form);
+    const status = getCredentialStatus(form.effectiveDate);
+
+    onAddCredential(Number(selectedDoctorId), {
+      ...form,
+      status,
+    });
+
     setForm({
       name: "",
-      status: "active",
       effectiveDate: "",
       expirationDate: "",
     });
@@ -102,15 +137,6 @@ function Credentials({
             onChange={handleChange}
             required
           />
-        </label>
-
-        <label>
-          Status
-          <select name="status" value={form.status} onChange={handleChange}>
-            <option value="active">Active</option>
-            <option value="expiring">Expiring Soon</option>
-            <option value="expired">Expired</option>
-          </select>
         </label>
 
         <label>
@@ -175,7 +201,7 @@ function Credentials({
                 return (
                   <tr key={cred.id}>
                     <td>{cred.name}</td>
-                    <td>{cred.status}</td>
+                    <td>{getCredentialStatus(cred.expirationDate)}</td>
                     <td>{cred.effectiveDate || "—"}</td>
                     <td>{cred.expirationDate || "—"}</td>
                     <td>
@@ -228,7 +254,7 @@ function Credentials({
                   <tr key={row.id}>
                     <td>{row.doctorName}</td>
                     <td>{row.name}</td>
-                    <td>{row.status}</td>
+                    <td>{getCredentialStatus(row.expirationDate)}</td>
                     <td>{row.effectiveDate || "—"}</td>
                     <td>{row.expirationDate || "—"}</td>
                     <td>
